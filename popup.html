@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PHUOC TOOLS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        /* Import font Google */
+
+        body {
+            width: 250px;
+            padding: 10px;
+            font-family: 'Roboto', Arial, sans-serif;
+            /* Sử dụng font hỗ trợ tiếng Việt */
+        }
+
+        h2 {
+            text-align: center;
+            color: #0F612F;
+
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #0078D7;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        li:hover {
+            background: #005A9E;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>PHUOC TOOLS</h2>
+    <ul>
+        <li id="func1">Link to Markdown</li>
+        <li id="func2">JSON Query Tool</li>
+        <!-- <li id="func2">Chức năng 2</li>
+        <li id="func3">Chức năng 3</li> -->
+    </ul>
+    <div id="jsonPanel" class="json-panel">
+        <textarea id="jsonInput" placeholder="Nhập chuỗi JSON vào đây..."></textarea>
+        <input type="text" id="queryInput" placeholder="Nhập biểu thức truy vấn (VD: data.users[0].name)">
+        <button id="executeQuery">Truy vấn</button>
+        <div id="result">Kết quả sẽ hiển thị ở đây</div>
+        <button id="copyResult">Sao chép kết quả</button>
+    </div>
+    <script src="scripts/popup.js"></script>
+</body>
+
+</html>
