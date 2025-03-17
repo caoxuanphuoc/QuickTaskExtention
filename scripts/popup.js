@@ -1,8 +1,13 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('Popup script loaded!');
+
   // Menu item cho tính năng Markdown Templates
   const markdownTemplatesMenuItem = document.getElementById('markdown-templates');
+  console.log('Markdown templates button found:', markdownTemplatesMenuItem);
+
   if (markdownTemplatesMenuItem) {
     markdownTemplatesMenuItem.addEventListener('click', function () {
+      console.log('Markdown templates button clicked!');
       // Mở tab mới với trang quản lý mẫu Markdown
       chrome.tabs.create({
         url: 'markdown-templates/index.html'
@@ -11,138 +16,176 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Accordion functionality
-  document.getElementById('linkToMdHeader').addEventListener('click', function () {
-    toggleSection('linkToMdContent', this);
-  });
+  const linkToMdHeader = document.getElementById('linkToMdHeader');
+  const jsonQueryHeader = document.getElementById('jsonQueryHeader');
 
-  document.getElementById('jsonQueryHeader').addEventListener('click', function () {
-    toggleSection('jsonQueryContent', this);
-  });
+  if (linkToMdHeader) {
+    linkToMdHeader.addEventListener('click', function () {
+      console.log('Link to MD header clicked');
+      toggleSection('linkToMdContent', this);
+    });
+  } else {
+    console.error('linkToMdHeader not found');
+  }
+
+  if (jsonQueryHeader) {
+    jsonQueryHeader.addEventListener('click', function () {
+      console.log('JSON Query header clicked');
+      toggleSection('jsonQueryContent', this);
+    });
+  } else {
+    console.error('jsonQueryHeader not found');
+  }
 
   // Clear button functionality
-  document.getElementById('clearResult').addEventListener('click', function () {
-    document.getElementById('result').textContent = 'Kết quả sẽ hiển thị ở đây';
-    document.getElementById('jsonInput').value = '';
-    showToast('Đã xóa kết quả');
-  });
+  const clearResultBtn = document.getElementById('clearResult');
+  if (clearResultBtn) {
+    clearResultBtn.addEventListener('click', function () {
+      document.getElementById('result').textContent = 'Kết quả sẽ hiển thị ở đây';
+      document.getElementById('jsonInput').value = '';
+      showToast('Đã xóa kết quả');
+    });
+  }
 
   // Existing function for Link to Markdown
-  document.getElementById("func1").addEventListener("click", () => {
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      let currentTab = tabs[0];
+  const func1Btn = document.getElementById('func1');
+  if (func1Btn) {
+    func1Btn.addEventListener('click', () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        let currentTab = tabs[0];
 
-      // Kiểm tra xem URL có phải là trang nội bộ của trình duyệt không
-      if (
-        currentTab.url.startsWith("chrome://") ||
-        currentTab.url.startsWith("edge://")
-      ) {
-        showToast("Không thể thực thi trên trang nội bộ của trình duyệt.");
-        return;
-      }
+        // Kiểm tra xem URL có phải là trang nội bộ của trình duyệt không
+        if (
+          currentTab.url.startsWith('chrome://') ||
+          currentTab.url.startsWith('edge://')
+        ) {
+          showToast('Không thể thực thi trên trang nội bộ của trình duyệt.');
+          return;
+        }
 
-      // Nếu hợp lệ, inject script
-      chrome.scripting.executeScript({
-        target: { tabId: currentTab.id },
-        function: activateLinkListener,
+        // Nếu hợp lệ, inject script
+        chrome.scripting.executeScript({
+          target: { tabId: currentTab.id },
+          function: activateLinkListener,
+        });
+
+        // Hiển thị thông báo thành công
+        showToast('Đã kích hoạt! Hãy nhấp vào một liên kết trên trang.');
+
+        // Đóng popup
+        setTimeout(() => window.close(), 1500);
       });
-
-      // Hiển thị thông báo thành công
-      showToast("Đã kích hoạt! Hãy nhấp vào một liên kết trên trang.");
-
-      // Đóng popup
-      setTimeout(() => window.close(), 1500);
     });
-  });
+  }
 
   // Xử lý cho chức năng JSON Query
-  const executeButton = document.getElementById("executeQuery");
-  const copyButton = document.getElementById("copyResult");
-  const jsonInput = document.getElementById("jsonInput");
-  const queryInput = document.getElementById("queryInput");
-  const resultDiv = document.getElementById("result");
-
-  // Loại bỏ dòng gây lỗi liên quan đến jsonPanel không tồn tại
-  // const jsonPanel = document.getElementById("jsonPanel"); 
-  // jsonPanel.style.display = "none";
+  const executeButton = document.getElementById('executeQuery');
+  const copyButton = document.getElementById('copyResult');
+  const jsonInput = document.getElementById('jsonInput');
+  const queryInput = document.getElementById('queryInput');
+  const resultDiv = document.getElementById('result');
 
   // Tải biểu thức truy vấn gần nhất khi mở popup
-  chrome.storage.local.get("lastQuery", (data) => {
-    if (data.lastQuery) {
-      queryInput.value = data.lastQuery;
-    }
-  });
+  if (queryInput) {
+    chrome.storage.local.get('lastQuery', (data) => {
+      if (data.lastQuery) {
+        queryInput.value = data.lastQuery;
+      }
+    });
+  }
 
   // Xử lý truy vấn JSON
-  executeButton.addEventListener("click", () => {
-    try {
-      if (!jsonInput.value.trim()) {
-        showToast("Vui lòng nhập dữ liệu JSON", 2000);
+  if (executeButton) {
+    executeButton.addEventListener('click', () => {
+      try {
+        if (!jsonInput.value.trim()) {
+          showToast('Vui lòng nhập dữ liệu JSON', 2000);
+          return;
+        }
+
+        const jsonData = JSON.parse(jsonInput.value);
+        const query = queryInput.value.trim();
+        const result = evaluateJsonPath(jsonData, query);
+
+        if (result !== undefined) {
+          if (typeof result === 'object') {
+            resultDiv.textContent = JSON.stringify(result, null, 2);
+          } else {
+            resultDiv.textContent = result;
+          }
+
+          // Lưu biểu thức gần nhất vào storage
+          if (query) {
+            chrome.storage.local.set({ lastQuery: query });
+          }
+
+          showToast('Truy vấn thành công!', 1000);
+        } else {
+          resultDiv.textContent = 'Không tìm thấy giá trị cho biểu thức này';
+          showToast('Không tìm thấy kết quả', 2000);
+        }
+      } catch (e) {
+        resultDiv.textContent = 'Lỗi: ' + e.message;
+        showToast('Lỗi xử lý JSON', 2000);
+      }
+    });
+  }
+
+  // Xử lý sao chép kết quả
+  if (copyButton) {
+    copyButton.addEventListener('click', () => {
+      if (resultDiv.textContent === 'Kết quả sẽ hiển thị ở đây') {
+        showToast('Không có dữ liệu để sao chép', 2000);
         return;
       }
 
-      const jsonData = JSON.parse(jsonInput.value);
-      const query = queryInput.value.trim();
-      const result = evaluateJsonPath(jsonData, query);
-
-      if (result !== undefined) {
-        if (typeof result === "object") {
-          resultDiv.textContent = JSON.stringify(result, null, 2);
-        } else {
-          resultDiv.textContent = result;
-        }
-
-        // Lưu biểu thức gần nhất vào storage
-        if (query) {
-          chrome.storage.local.set({ lastQuery: query });
-        }
-
-        showToast("Truy vấn thành công!", 1000);
-      } else {
-        resultDiv.textContent = "Không tìm thấy giá trị cho biểu thức này";
-        showToast("Không tìm thấy kết quả", 2000);
-      }
-    } catch (e) {
-      resultDiv.textContent = "Lỗi: " + e.message;
-      showToast("Lỗi xử lý JSON", 2000);
-    }
-  });
-
-  // Xử lý sao chép kết quả
-  copyButton.addEventListener("click", () => {
-    if (resultDiv.textContent === "Kết quả sẽ hiển thị ở đây") {
-      showToast("Không có dữ liệu để sao chép", 2000);
-      return;
-    }
-
-    navigator.clipboard
-      .writeText(resultDiv.textContent)
-      .then(() => {
-        showToast("Đã sao chép kết quả vào clipboard", 1500);
-      })
-      .catch((err) => {
-        console.error("Lỗi khi sao chép: ", err);
-        showToast("Lỗi khi sao chép", 2000);
-      });
-  });
+      navigator.clipboard
+        .writeText(resultDiv.textContent)
+        .then(() => {
+          showToast('Đã sao chép kết quả vào clipboard', 1500);
+        })
+        .catch((err) => {
+          console.error('Lỗi khi sao chép: ', err);
+          showToast('Lỗi khi sao chép', 2000);
+        });
+    });
+  }
 });
 
 // Helper Functions
 function toggleSection(id, header) {
+  console.log('Toggling section:', id);
   const content = document.getElementById(id);
+  if (!content) {
+    console.error('Content element not found:', id);
+    return;
+  }
+
   const icon = header.querySelector('.tool-toggle i');
+  if (!icon) {
+    console.error('Toggle icon not found in header');
+  }
 
   content.classList.toggle('active');
+  console.log('Active class toggled, is active:', content.classList.contains('active'));
 
-  if (content.classList.contains('active')) {
-    icon.className = 'fas fa-chevron-up';
-  } else {
-    icon.className = 'fas fa-chevron-down';
+  if (icon) {
+    if (content.classList.contains('active')) {
+      icon.className = 'fas fa-chevron-up';
+    } else {
+      icon.className = 'fas fa-chevron-down';
+    }
   }
 }
 
 // Toast notification
 function showToast(message, duration = 2000) {
   const toast = document.getElementById('toast');
+  if (!toast) {
+    console.error('Toast element not found');
+    return;
+  }
+
   toast.textContent = message;
   toast.classList.add('show');
 
