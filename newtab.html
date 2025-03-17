@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Task Dashboard</title>
+    <link rel="stylesheet" href="styles/newtab.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <header>
+            <div class="time-date">
+                <div class="time" id="current-time">00:00:00</div>
+                <div class="date" id="current-date">Thứ..., Ngày ... tháng ... năm ...</div>
+                <div class="greeting" id="greeting">Chào buổi sáng!</div>
+            </div>
+        </header>
+
+        <main>
+            <div class="row">
+                <section class="quick-access">
+                    <h2><i class="fas fa-star"></i> Truy cập nhanh</h2>
+                    <div class="bookmarks-container" id="bookmarks">
+                        <!-- Bookmarks will be added dynamically -->
+                    </div>
+                    <button id="add-bookmark" class="btn add-btn">
+                        <i class="fas fa-plus"></i> Thêm liên kết
+                    </button>
+                </section>
+
+                <section class="task-list">
+                    <h2><i class="fas fa-tasks"></i> Công việc hôm nay</h2>
+                    <div class="add-task">
+                        <input type="text" id="new-task" placeholder="Thêm công việc mới...">
+                        <button id="add-task-btn" class="btn">Thêm</button>
+                    </div>
+                    <ul id="tasks-list">
+                        <!-- Tasks will be added dynamically -->
+                    </ul>
+                </section>
+            </div>
+
+            <div class="row">
+                <section class="note-section">
+                    <h2><i class="fas fa-sticky-note"></i> Ghi chú nhanh</h2>
+                    <textarea id="quick-note" placeholder="Ghi chú nhanh của bạn..."></textarea>
+                </section>
+
+                <section class="tools-section">
+                    <h2><i class="fas fa-tools"></i> Công cụ</h2>
+                    <div class="tools-grid">
+                        <div class="tool-item" id="markdown-templates-tool">
+                            <i class="fas fa-file-alt"></i>
+                            <span>Mẫu Markdown</span>
+                        </div>
+                        <div class="tool-item" id="json-query-tool">
+                            <i class="fas fa-code"></i>
+                            <span>JSON Query</span>
+                        </div>
+                        <div class="tool-item" id="pomodoro-timer">
+                            <i class="fas fa-clock"></i>
+                            <span>Pomodoro</span>
+                        </div>
+                        <div class="tool-item" id="link-converter">
+                            <i class="fas fa-link"></i>
+                            <span>Link to MD</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <div class="search-container">
+            <form id="search-form" action="https://www.google.com/search" method="GET" target="_blank">
+                <input type="text" id="search-input" name="q" placeholder="Tìm kiếm Google...">
+                <button type="submit" class="btn search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for adding bookmarks -->
+    <div id="bookmark-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Thêm liên kết nhanh</h3>
+            <div class="form-group">
+                <label for="bookmark-title">Tên:</label>
+                <input type="text" id="bookmark-title" placeholder="VD: Google Drive">
+            </div>
+            <div class="form-group">
+                <label for="bookmark-url">URL:</label>
+                <input type="text" id="bookmark-url" placeholder="VD: https://drive.google.com">
+            </div>
+            <div class="form-group">
+                <label for="bookmark-icon">Icon:</label>
+                <select id="bookmark-icon">
+                    <option value="fa-globe">Globe</option>
+                    <option value="fa-envelope">Mail</option>
+                    <option value="fa-file">Document</option>
+                    <option value="fa-chart-bar">Chart</option>
+                    <option value="fa-calendar">Calendar</option>
+                    <option value="fa-code">Code</option>
+                    <option value="fa-github">GitHub</option>
+                    <option value="fa-trello">Trello</option>
+                </select>
+            </div>
+            <button id="save-bookmark" class="btn">Lưu</button>
+        </div>
+    </div>
+
+    <!-- Pomodoro Timer Modal -->
+    <div id="pomodoro-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3>Pomodoro Timer</h3>
+            <div class="pomodoro-display">
+                <div class="timer" id="pomodoro-timer-display">25:00</div>
+                <div class="pomodoro-status" id="pomodoro-status">Sẵn sàng</div>
+            </div>
+            <div class="pomodoro-controls">
+                <button id="pomodoro-start" class="btn">Bắt đầu</button>
+                <button id="pomodoro-pause" class="btn" disabled>Tạm dừng</button>
+                <button id="pomodoro-reset" class="btn">Đặt lại</button>
+            </div>
+            <div class="pomodoro-settings">
+                <div class="form-group">
+                    <label>Thời gian làm việc (phút):</label>
+                    <input type="number" id="work-duration" min="1" max="60" value="25">
+                </div>
+                <div class="form-group">
+                    <label>Thời gian nghỉ (phút):</label>
+                    <input type="number" id="break-duration" min="1" max="30" value="5">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/newtab.js"></script>
+</body>
+
+</html>

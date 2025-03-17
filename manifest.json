@@ -1,22 +1,39 @@
 {
   "manifest_version": 3,
-  "name": "Copy Link Extension",
+  "name": "Quick Task Extension",
   "version": "1.0",
-  "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": ["<all_urls>"],
+  "description": "Tiện ích giúp tự động hóa quy trình làm việc của bạn",
+  "permissions": [
+    "storage",
+    "clipboardWrite",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "public/icons/task_16.png"
+      "16": "/public/icons/task_16.png"
     }
+  },
+  "icons": {
+    "16": "/public/icons/task_16.png"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
   },
   "background": {
     "service_worker": "scripts/background.js"
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["scripts/content.js"],
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "scripts/content.js"
+      ],
       "run_at": "document_end"
     }
   ]

@@ -1,61 +1,31 @@
-// document.addEventListener("DOMContentLoaded", () => {
-//   document.getElementById("func1").addEventListener("click", () => {
-//     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-//       let currentTab = tabs[0];
-
-//       // Kiểm tra xem URL có phải là trang nội bộ của trình duyệt không
-//       if (
-//         currentTab.url.startsWith("chrome://") ||
-//         currentTab.url.startsWith("edge://")
-//       ) {
-//         alert("Không thể thực thi trên trang nội bộ của trình duyệt.");
-//         return;
-//       }
-
-//       // Nếu hợp lệ, inject script
-//       chrome.scripting.executeScript({
-//         target: { tabId: currentTab.id },
-//         function: activateLinkListener,
-//       });
-
-//       // Đóng popup
-//       window.close();
-//     });
-//   });
-// });
-
-// function activateLinkListener() {
-//   document.addEventListener(
-//     "click",
-//     (event) => {
-//       let target = event.target;
-
-//       if (target.tagName === "A") {
-//         event.preventDefault();
-
-//         let title = target.innerText.trim();
-//         let link = target.href;
-
-//         if (!title) {
-//           title = target.getAttribute("title") || "Không có tiêu đề";
-//         }
-
-//         let markdownLink = `### [${title.replace("WIP:", "")}](${link})`;
-
-//         navigator.clipboard
-//           .writeText(markdownLink)
-//           .then(() => {
-//             //alert("Đã sao chép: " + markdownLink);
-//           })
-//           .catch((err) => {
-//             console.error("Lỗi sao chép:", err);
-//           });
-//       }
-//     },
-//     { once: true }
-//   );
-// }
 document.addEventListener("DOMContentLoaded", () => {
+  // Menu item cho tính năng Markdown Templates
+  const markdownTemplatesMenuItem = document.getElementById('markdown-templates');
+  if (markdownTemplatesMenuItem) {
+    markdownTemplatesMenuItem.addEventListener('click', function () {
+      // Mở tab mới với trang quản lý mẫu Markdown
+      chrome.tabs.create({
+        url: 'markdown-templates/index.html'
+      });
+    });
+  }
+
+  // Accordion functionality
+  document.getElementById('linkToMdHeader').addEventListener('click', function () {
+    toggleSection('linkToMdContent', this);
+  });
+
+  document.getElementById('jsonQueryHeader').addEventListener('click', function () {
+    toggleSection('jsonQueryContent', this);
+  });
+
+  // Clear button functionality
+  document.getElementById('clearResult').addEventListener('click', function () {
+    document.getElementById('result').textContent = 'Kết quả sẽ hiển thị ở đây';
+    document.getElementById('jsonInput').value = '';
+    showToast('Đã xóa kết quả');
+  });
+
   // Existing function for Link to Markdown
   document.getElementById("func1").addEventListener("click", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -66,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentTab.url.startsWith("chrome://") ||
         currentTab.url.startsWith("edge://")
       ) {
-        alert("Không thể thực thi trên trang nội bộ của trình duyệt.");
+        showToast("Không thể thực thi trên trang nội bộ của trình duyệt.");
         return;
       }
 
@@ -76,20 +46,24 @@ document.addEventListener("DOMContentLoaded", () => {
         function: activateLinkListener,
       });
 
+      // Hiển thị thông báo thành công
+      showToast("Đã kích hoạt! Hãy nhấp vào một liên kết trên trang.");
+
       // Đóng popup
-      window.close();
+      setTimeout(() => window.close(), 1500);
     });
   });
 
   // Xử lý cho chức năng JSON Query
-  const func2Button = document.getElementById("func2");
-  const jsonPanel = document.getElementById("jsonPanel");
-  const jsonInput = document.getElementById("jsonInput");
-  const queryInput = document.getElementById("queryInput");
   const executeButton = document.getElementById("executeQuery");
   const copyButton = document.getElementById("copyResult");
+  const jsonInput = document.getElementById("jsonInput");
+  const queryInput = document.getElementById("queryInput");
   const resultDiv = document.getElementById("result");
-  jsonPanel.style.display = "none";
+
+  // Loại bỏ dòng gây lỗi liên quan đến jsonPanel không tồn tại
+  // const jsonPanel = document.getElementById("jsonPanel"); 
+  // jsonPanel.style.display = "none";
 
   // Tải biểu thức truy vấn gần nhất khi mở popup
   chrome.storage.local.get("lastQuery", (data) => {
@@ -98,18 +72,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Toggle JSON panel khi nhấn nút func2
-  func2Button.addEventListener("click", () => {
-    if (jsonPanel.style.display === "block") {
-      jsonPanel.style.display = "none";
-    } else {
-      jsonPanel.style.display = "block";
-    }
-  });
-
   // Xử lý truy vấn JSON
   executeButton.addEventListener("click", () => {
     try {
+      if (!jsonInput.value.trim()) {
+        showToast("Vui lòng nhập dữ liệu JSON", 2000);
+        return;
+      }
+
       const jsonData = JSON.parse(jsonInput.value);
       const query = queryInput.value.trim();
       const result = evaluateJsonPath(jsonData, query);
@@ -125,30 +95,61 @@ document.addEventListener("DOMContentLoaded", () => {
         if (query) {
           chrome.storage.local.set({ lastQuery: query });
         }
+
+        showToast("Truy vấn thành công!", 1000);
       } else {
         resultDiv.textContent = "Không tìm thấy giá trị cho biểu thức này";
+        showToast("Không tìm thấy kết quả", 2000);
       }
     } catch (e) {
       resultDiv.textContent = "Lỗi: " + e.message;
+      showToast("Lỗi xử lý JSON", 2000);
     }
   });
 
   // Xử lý sao chép kết quả
   copyButton.addEventListener("click", () => {
+    if (resultDiv.textContent === "Kết quả sẽ hiển thị ở đây") {
+      showToast("Không có dữ liệu để sao chép", 2000);
+      return;
+    }
+
     navigator.clipboard
       .writeText(resultDiv.textContent)
       .then(() => {
-        const originalText = copyButton.textContent;
-        copyButton.textContent = "✓ Đã sao chép";
-        setTimeout(() => {
-          copyButton.textContent = originalText;
-        }, 1500);
+        showToast("Đã sao chép kết quả vào clipboard", 1500);
       })
       .catch((err) => {
         console.error("Lỗi khi sao chép: ", err);
+        showToast("Lỗi khi sao chép", 2000);
       });
   });
 });
+
+// Helper Functions
+function toggleSection(id, header) {
+  const content = document.getElementById(id);
+  const icon = header.querySelector('.tool-toggle i');
+
+  content.classList.toggle('active');
+
+  if (content.classList.contains('active')) {
+    icon.className = 'fas fa-chevron-up';
+  } else {
+    icon.className = 'fas fa-chevron-down';
+  }
+}
+
+// Toast notification
+function showToast(message, duration = 2000) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+
+  setTimeout(function () {
+    toast.classList.remove('show');
+  }, duration);
+}
 
 // Function to evaluate JSON path expressions
 function evaluateJsonPath(obj, path) {

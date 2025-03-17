@@ -1,64 +1,314 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>PHUOC TOOLS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Task Extension</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-        /* Import font Google */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #16a085;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-            width: 250px;
+            width: 300px;
             padding: 10px;
-            font-family: 'Roboto', Arial, sans-serif;
-            /* Sử dụng font hỗ trợ tiếng Việt */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
         }
 
-        h2 {
-            text-align: center;
-            color: #0F612F;
-
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        li {
-            padding: 10px;
-            margin: 5px 0;
-            background: #0078D7;
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
+            padding: 15px;
             text-align: center;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            box-shadow: var(--box-shadow);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header h1 i {
+            margin-right: 10px;
+        }
+
+        .container {
+            padding: 15px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .tool-header {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            background: white;
             cursor: pointer;
-            border-radius: 5px;
+            user-select: none;
+        }
+
+        .tool-icon {
+            width: 28px;
+            height: 28px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .tool-title {
+            font-weight: 500;
+            flex-grow: 1;
+        }
+
+        .tool-toggle {
+            color: var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .tool-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background-color: #f5f5f5;
+        }
+
+        .tool-content.active {
+            max-height: 400px;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        /* Form controls */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: inherit;
             font-size: 14px;
         }
 
-        li:hover {
-            background: #005A9E;
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .button i {
+            margin-right: 6px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .button-group .button {
+            flex: 1;
+        }
+
+        .result-container {
+            margin-top: 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            padding: 10px;
+            max-height: 100px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: #95a5a6;
+            padding: 8px;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            box-shadow: var(--box-shadow);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            text-align: center;
+            text-decoration: none;
+            color: white;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background-color: #45a049;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
         }
     </style>
 </head>
 
 <body>
-    <h2>PHUOC TOOLS</h2>
-    <ul>
-        <li id="func1">Link to Markdown</li>
-        <li id="func2">JSON Query Tool</li>
-        <!-- <li id="func2">Chức năng 2</li>
-        <li id="func3">Chức năng 3</li> -->
-    </ul>
-    <div id="jsonPanel" class="json-panel">
-        <textarea id="jsonInput" placeholder="Nhập chuỗi JSON vào đây..."></textarea>
-        <input type="text" id="queryInput" placeholder="Nhập biểu thức truy vấn (VD: data.users[0].name)">
-        <button id="executeQuery">Truy vấn</button>
-        <div id="result">Kết quả sẽ hiển thị ở đây</div>
-        <button id="copyResult">Sao chép kết quả</button>
+    <h1>Quick Task</h1>
+
+    <a class="menu-item" id="markdown-templates">Quản lý mẫu Markdown</a>
+    <!-- Thêm các menu khác tại đây -->
+
+    <div class="container">
+        <!-- Link to Markdown Tool -->
+        <div class="tool-card">
+            <div class="tool-header" id="linkToMdHeader">
+                <div class="tool-icon">
+                    <i class="fas fa-link"></i>
+                </div>
+                <div class="tool-title">Link to Markdown</div>
+                <div class="tool-toggle">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            <div class="tool-content" id="linkToMdContent">
+                <p style="margin-bottom: 10px; font-size: 13px;">Kích hoạt công cụ này để chuyển đổi liên kết thành định
+                    dạng Markdown khi bạn nhấp vào liên kết trên trang web.</p>
+                <button id="func1" class="button">
+                    <i class="fas fa-magic"></i> Kích hoạt
+                </button>
+            </div>
+        </div>
+
+        <!-- JSON Query Tool -->
+        <div class="tool-card">
+            <div class="tool-header" id="jsonQueryHeader">
+                <div class="tool-icon">
+                    <i class="fas fa-code"></i>
+                </div>
+                <div class="tool-title">JSON Query Tool</div>
+                <div class="tool-toggle">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            <div class="tool-content" id="jsonQueryContent">
+                <div class="form-group">
+                    <textarea id="jsonInput" class="form-control" placeholder="Nhập chuỗi JSON vào đây..."></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="queryInput" class="form-control"
+                        placeholder="Nhập biểu thức truy vấn (VD: data.users[0].name)">
+                </div>
+                <button id="executeQuery" class="button">
+                    <i class="fas fa-search"></i> Truy vấn
+                </button>
+
+                <div id="result" class="result-container">Kết quả sẽ hiển thị ở đây</div>
+
+                <div class="button-group">
+                    <button id="copyResult" class="button">
+                        <i class="fas fa-copy"></i> Sao chép
+                    </button>
+                    <button id="clearResult" class="button">
+                        <i class="fas fa-trash-alt"></i> Xóa
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <script src="scripts/popup.js"></script>
+
+    <div class="footer">
+        PHUOC TOOLS v1.0 - Tiện ích mở rộng Chrome
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="popup.js"></script>
 </body>
 
 </html>
